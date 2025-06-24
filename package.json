@@ -1,5 +1,5 @@
 {
-  "name": "next-js-mongo-passport-template",
+  "name": "next-js-mongo-passport-template-server",
   "version": "1.0.0",
   "description": "Application for managing functions, including messages, from various outside applications",
   "main": "server.js",

@@ -27,9 +27,9 @@ app.use(session({
     secure: false, // Set to true in production with HTTPS
     maxAge: 1000 * 60 * 60 * 24 // 24 hours
   },
-  store: MongoStore.create({
-    mongoUrl: process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template'
-  })
+  // store: MongoStore.create({
+  //   mongoUrl: process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template'
+  // })
 }));
 
 // Passport middleware

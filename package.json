@@ -1,0 +1,46 @@
+{
+  "name": "next-js-mongo-passport-template",
+  "version": "1.0.0",
+  "description": "Application for managing functions, including messages, from various outside applications",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "if-env NODE_ENV=production && npm run start:prod || npm run start:dev",
+    "start:prod": "node server.js",
+    "start:dev": "concurrently \"nodemon --ignore 'client/*'\" \"npm run client:dev\"",
+    "client": "cd client && npm run start",
+    "client:dev": "cd client && npm run dev",
+    "install": "cd client && npm install",
+    "build": "cd client && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nick-ramsay/next-js-mongo-passport-template.git"
+  },
+  "author": "Nick Ramsay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nick-ramsay/next-js-mongo-passport-template/issues"
+  },
+  "homepage": "https://github.com/nick-ramsay/next-js-mongo-passport-template#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcryptjs": "^3.0.2",
+    "concurrently": "^5.2.0",
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "core-js": "^3.6.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.18.1",
+    "googleapis": "^150.0.1",
+    "if-env": "^1.0.4",
+    "js-sha256": "^0.9.0",
+    "mongoose": "^5.9.25",
+    "nodemailer": "^6.4.10",
+    "nodemon": "^2.0.4",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0"
+  }
+}

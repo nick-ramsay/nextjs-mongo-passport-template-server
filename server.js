@@ -22,14 +22,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET || 'your-secret',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: currentMongoUri }),
   cookie: {
-    secure: true,
     httpOnly: true,
-    sameSite: 'lax',
+    secure: true, // use false if testing locally over HTTP
+    sameSite: 'lax', // or 'none' if frontend/backend are different origins
     maxAge: 1000 * 60 * 60 * 24, // 1 day
   },
 }));

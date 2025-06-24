@@ -28,10 +28,10 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: currentMongoUri }),
   cookie: {
     httpOnly: true,
-    secure: true, // use false if testing locally over HTTP
-    sameSite: 'none', // or 'none' if frontend/backend are different origins
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-  },
+    secure: true, // Heroku uses HTTPS
+    sameSite: 'none', // <— REQUIRED for cross-origin cookies
+    maxAge: 1000 * 60 * 60 * 24,
+  }
 }));
 
 // Passport middleware

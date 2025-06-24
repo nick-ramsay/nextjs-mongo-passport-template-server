@@ -10,7 +10,7 @@ const routes = require("./routes")
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const currentMongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/nextjs-mongo-passport-template';
+const currentMongoUri = NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template';
 
 // Middleware
 app.use(cors({

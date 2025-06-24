@@ -37,6 +37,7 @@ app.use(session({
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+app.set('trust proxy', 1);
 
 // Passport config
 require('./config/passport')(passport);

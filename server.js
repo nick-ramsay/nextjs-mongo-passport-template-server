@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const session = require('express-session');
 const cors = require('cors');
@@ -21,11 +22,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     secure: false, // Set to true in production with HTTPS
     maxAge: 1000 * 60 * 60 * 24 // 24 hours
-  }
+  },
+  store: MongoStore.create({
+    mongoUrl: process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template'
+  })
 }));
 
 // Passport middleware
@@ -36,7 +40,10 @@ app.use(passport.session());
 require('./config/passport')(passport);
 
 // MongoDB connection
-mongoose.connect(process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template')
+mongoose.connect(process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 

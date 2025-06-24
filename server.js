@@ -10,6 +10,8 @@ const routes = require("./routes")
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const currentMongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/nextjs-mongo-passport-template';
+
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === "production" ? 'https://nextjs-mongo-passport-template.vercel.app' : 'http://localhost:3000',
@@ -23,13 +25,13 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: true,
+  store: MongoStore.create({ mongoUrl: currentMongoUri }),
   cookie: {
-    secure: false, // Set to true in production with HTTPS
-    maxAge: 1000 * 60 * 60 * 24 // 24 hours
+    secure: true,
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
   },
-  // store: MongoStore.create({
-  //   mongoUrl: process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template'
-  // })
 }));
 
 // Passport middleware
@@ -40,7 +42,7 @@ app.use(passport.session());
 require('./config/passport')(passport);
 
 // MongoDB connection
-mongoose.connect(process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template', {
+mongoose.connect(currentMongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

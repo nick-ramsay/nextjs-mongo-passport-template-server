@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.NODE_ENV === "production" ? 'http://localhost:3000':'https://nextjs-mongo-passport-template.vercel.app/',
   credentials: true
 }));
 app.use(express.json());
@@ -36,7 +36,7 @@ app.use(passport.session());
 require('./config/passport')(passport);
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nextjs-mongo-passport-template')
+mongoose.connect(process.env.mongo_uri || 'mongodb://localhost:27017/nextjs-mongo-passport-template')
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 

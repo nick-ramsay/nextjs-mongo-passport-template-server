@@ -29,7 +29,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true, // use false if testing locally over HTTP
-    sameSite: 'lax', // or 'none' if frontend/backend are different origins
+    sameSite: 'none', // or 'none' if frontend/backend are different origins
     maxAge: 1000 * 60 * 60 * 24, // 1 day
   },
 }));

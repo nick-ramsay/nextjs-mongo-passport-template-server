@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3001;
 
 const currentMongoUri = process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template';
 
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === "production" ? 'https://nextjs-mongo-passport-template.vercel.app' : 'http://localhost:3000',
@@ -37,7 +39,6 @@ app.use(session({
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-app.set('trust proxy', 1);
 
 // Passport config
 require('./config/passport')(passport);

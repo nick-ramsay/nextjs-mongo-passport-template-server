@@ -30,9 +30,11 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: currentMongoUri }),
   cookie: {
     httpOnly: true,
-    secure: true, // Heroku uses HTTPS
-    sameSite: 'none', // <— REQUIRED for cross-origin cookies
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', // Always use 'lax' for better mobile compatibility
     maxAge: 1000 * 60 * 60 * 24,
+    // Additional mobile-friendly settings
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Let browser set domain
   }
 }));
 

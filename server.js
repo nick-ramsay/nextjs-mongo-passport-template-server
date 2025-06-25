@@ -43,26 +43,49 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration with dynamic sameSite for iOS compatibility
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: currentMongoUri }),
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    maxAge: 1000 * 60 * 60 * 24,
+  }
+}));
+
+// iOS cookie compatibility middleware
 app.use((req, res, next) => {
   const userAgent = req.headers['user-agent'] || '';
   const isIos = /iPhone|iPad|iPod/.test(userAgent);
   
-  // Use different sameSite setting for iOS to avoid compatibility issues
-  const sessionConfig = {
-    secret: process.env.SESSION_SECRET || 'your-secret',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: currentMongoUri }),
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: isIos ? false : 'none', // iOS compatibility: disable sameSite for iOS
-      maxAge: 1000 * 60 * 60 * 24,
-    }
-  };
+  if (isIos) {
+    console.log('iOS detected, applying cookie compatibility fix');
+    
+    // Override res.setHeader to modify Set-Cookie for iOS
+    const originalSetHeader = res.setHeader;
+    res.setHeader = function(name, value) {
+      if (name.toLowerCase() === 'set-cookie') {
+        if (Array.isArray(value)) {
+          value = value.map(cookie => {
+            if (cookie.includes('connect.sid')) {
+              // For iOS: remove SameSite=None which causes issues
+              return cookie.replace(/;\s*SameSite=None/gi, '');
+            }
+            return cookie;
+          });
+        } else if (typeof value === 'string' && value.includes('connect.sid')) {
+          value = value.replace(/;\s*SameSite=None/gi, '');
+        }
+      }
+      return originalSetHeader.call(this, name, value);
+    };
+  }
   
-  session(sessionConfig)(req, res, next);
+  next();
 });
 
 // Passport middleware

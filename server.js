@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === "production" ? 'https://nextjs-mongo-passport-template.vercel.app' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === "production" ? 'https://www.nextjs-mongo-passport-template.com' : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

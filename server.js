@@ -52,37 +52,19 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 1000 * 60 * 60 * 24,
   }
 }));
 
-// iOS cookie compatibility middleware
+// iOS cookie compatibility middleware (simplified)
 app.use((req, res, next) => {
   const userAgent = req.headers['user-agent'] || '';
   const isIos = /iPhone|iPad|iPod/.test(userAgent);
   
-  if (isIos) {
-    console.log('iOS detected, applying cookie compatibility fix');
-    
-    // Override res.setHeader to modify Set-Cookie for iOS
-    const originalSetHeader = res.setHeader;
-    res.setHeader = function(name, value) {
-      if (name.toLowerCase() === 'set-cookie') {
-        if (Array.isArray(value)) {
-          value = value.map(cookie => {
-            if (cookie.includes('connect.sid')) {
-              // For iOS: remove SameSite=None which causes issues
-              return cookie.replace(/;\s*SameSite=None/gi, '');
-            }
-            return cookie;
-          });
-        } else if (typeof value === 'string' && value.includes('connect.sid')) {
-          value = value.replace(/;\s*SameSite=None/gi, '');
-        }
-      }
-      return originalSetHeader.call(this, name, value);
-    };
+  if (isIos && process.env.NODE_ENV !== 'production') {
+    console.log('iOS detected in development mode');
+    // In development, we're using sameSite: 'lax' which works better with iOS
   }
   
   next();

@@ -14,29 +14,56 @@ const currentMongoUri = process.env.NODE_ENV === "production" ? process.env.mong
 
 app.set('trust proxy', 1);
 
+// Fix for iOS Safari sameSite=none issue
+app.use((req, res, next) => {
+  const userAgent = req.headers['user-agent'] || '';
+  
+  // Detect iOS Safari with the sameSite=none bug (iOS 12.x and some earlier versions)
+  const isIosSafariWithBug = /iPhone|iPad|iPod/.test(userAgent) && 
+    /Safari/.test(userAgent) && 
+    !/CriOS/.test(userAgent) && // Not Chrome on iOS
+    (/OS 12_/.test(userAgent) || /OS 11_/.test(userAgent) || /OS 10_/.test(userAgent));
+  
+  if (isIosSafariWithBug) {
+    // For buggy iOS Safari versions, we need to handle cookies differently
+    req.skipSameSiteNone = true;
+  }
+  
+  next();
+});
+
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === "production" ? 'https://nextjs-mongo-passport-template.vercel.app' : 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // For iOS Safari compatibility
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: currentMongoUri }),
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax', // Always use 'lax' for better mobile compatibility
-    maxAge: 1000 * 60 * 60 * 24,
-    // Additional mobile-friendly settings
-    domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Let browser set domain
-  }
-}));
+// Session configuration with dynamic sameSite for iOS compatibility
+app.use((req, res, next) => {
+  const userAgent = req.headers['user-agent'] || '';
+  const isIos = /iPhone|iPad|iPod/.test(userAgent);
+  
+  // Use different sameSite setting for iOS to avoid compatibility issues
+  const sessionConfig = {
+    secret: process.env.SESSION_SECRET || 'your-secret',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: currentMongoUri }),
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: isIos ? false : 'none', // iOS compatibility: disable sameSite for iOS
+      maxAge: 1000 * 60 * 60 * 24,
+    }
+  };
+  
+  session(sessionConfig)(req, res, next);
+});
 
 // Passport middleware
 app.use(passport.initialize());

@@ -44,7 +44,6 @@ const smtpTransport = nodemailer.createTransport({
 module.exports = {
 
     login: (req, res, next) => {
-        console.log(req.body);
         passport.authenticate('local', (err, user, info) => {
             console.log(err);
             if (err) {
@@ -64,7 +63,6 @@ module.exports = {
                     message: 'Login successful',
                     user: {
                         id: user._id,
-                        name: user.name,
                         email: user.email
                     }
                 });
@@ -83,8 +81,8 @@ module.exports = {
         if (req.isAuthenticated()) {
             res.json({
                 user: {
-                    id: req.user._id,
-                    name: req.user.name,
+                    firstname: req.user.firstname,
+                    lastname: req.user.lastname,
                     email: req.user.email
                 }
             });

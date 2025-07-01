@@ -78,6 +78,8 @@ module.exports = {
         });
     },
     getUser: (req, res) => {
+        let currentPath = req.query.currentPath || '/';
+        console.log(currentPath)
         if (req.isAuthenticated()) {
             res.json({
                 user: {
@@ -86,8 +88,11 @@ module.exports = {
                     email: req.user.email
                 }
             });
-        } else {
+        } else if (currentPath !== '/login') {
             res.status(401).json({ message: 'Not authenticated' });
+        }
+        else {
+            res.json({ user: null });
         }
     },
     sendEmail: function (req, res) {

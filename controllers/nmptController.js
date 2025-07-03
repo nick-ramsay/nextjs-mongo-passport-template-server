@@ -108,7 +108,7 @@ module.exports = {
         };
 
         smtpTransport.sendMail(mailOptions, (error, response) => {
-            error ? console.log(error) : console.log(response);
+            error ? console.log(error) : "Email sent successfully ✅"
             smtpTransport.close();
         });
     },
@@ -121,11 +121,11 @@ module.exports = {
             .catch(err => res.status(422).json(err));
     },
     checkExistingAccountEmails: function (req, res) {
-        console.log("Called check User controller...");
+        console.log("Called check existing account emails controller...");
         console.log(req.body);
         db.User
             .find({ email: req.body[0] }, { email: 1, _id: 0 }).sort({})
-            .then(dbModel => res.json(dbModel[0]))
+            .then(dbModel => { res.json(dbModel[0]) })
             .catch(err => res.status(422).json(err));
     },
     setEmailVerficationToken: function (req, res) {

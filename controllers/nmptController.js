@@ -151,16 +151,17 @@ module.exports = {
     },
     resetPasswordRequest: function (req, res) {
         console.log("Called reset password request controller...");
+        let email = req.body.email;
         let resetToken = Math.floor((Math.random() * 999999) + 100000).toString();
-        console.log(resetToken);
 
-        db.User
-            .updateOne({ email: req.body[0] }, { passwordResetToken: sha256(resetToken) })
+        db.ResetPasswordRequests
+            .replaceOne({ email: email }, { email: email, resetTokens: resetToken }, { upsert: true })
             .then(dbModel => {
-                res.json(dbModel[0]),
+                console.log(dbModel),
+                res.json(dbModel),
                     smtpTransport.sendMail({
                         from: 'applications.nickramsay@gmail.com',
-                        to: req.body[0],
+                        to: email,
                         subject: "Your Password Reset Code",
                         text: "Your password reset code is: " + resetToken
                     }, (error, response) => {

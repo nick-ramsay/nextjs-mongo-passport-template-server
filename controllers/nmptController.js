@@ -3,7 +3,7 @@ const passport = require('passport');
 
 require('dotenv').config();
 
-const sha256 = require('js-sha256').sha256;
+const bcrypt = require('bcrypt');
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
@@ -150,20 +150,20 @@ module.exports = {
             .catch(err => res.status(422).json(err));
     },
     resetPasswordRequest: function (req, res) {
+
         console.log("Called reset password request controller...");
         let email = req.body.email;
-        let resetToken = Math.floor((Math.random() * 999999) + 100000).toString();
+        let resetCode = Math.floor((Math.random() * 999999) + 100000).toString();
 
         db.ResetPasswordRequests
-            .replaceOne({ email: email }, { email: email, resetTokens: resetToken }, { upsert: true })
+            .replaceOne({ email: email }, { email: email, resetCode: resetCode }, { upsert: true })
             .then(dbModel => {
-                console.log(dbModel),
-                res.json(dbModel),
+                    res.json(dbModel),
                     smtpTransport.sendMail({
                         from: 'applications.nickramsay@gmail.com',
                         to: email,
                         subject: "Your Password Reset Code",
-                        text: "Your password reset code is: " + resetToken
+                        text: "Your password reset code is: " + resetCode
                     }, (error, response) => {
                         error ? console.log(error) : console.log(response);
                         smtpTransport.close();
@@ -173,18 +173,30 @@ module.exports = {
     },
     checkEmailAndToken: function (req, res) {
         console.log("Called check email and token controller...");
-        console.log(req.body);
         db.User
             .find({ email: req.body.email, passwordResetToken: req.body.resetToken }, { email: 1 })
             .then(dbModel => res.json(dbModel[0]))
             .catch(err => res.status(422).json(err));
     },
     resetPassword: function (req, res) {
+        async function hashPassword(plainPassword) {
+            const saltRounds = 10;
+            return await bcrypt.hash(plainPassword, saltRounds);
+        }
+
         console.log("Called reset password controller...");
-        console.log(req.body);
-        db.User
-            .updateOne({ email: req.body.email }, { password: req.body.newPassword, passwordResetToken: null })
-            .then(dbModel => res.json(dbModel[0]))
-            .catch(err => res.status(422).json(err));
+        db.ResetPasswordRequests.findOne({ email: req.body.email, resetCode: req.body.resetCode }).then(async (dbModel) => {
+            console.log(dbModel);
+            if (dbModel) {
+                const hashedPassword = await hashPassword(req.body.newPassword);
+                db.User.updateOne({ email: req.body.email }, { password: hashedPassword })
+                    .then(() => {
+                        res.json({ success: true, message: "Password reset successfully" });
+                    })
+                    .catch(err => res.status(422).json({ success: false, message: "Error resetting password", error: err }));
+            } else {
+                res.status(404).json({ success: false, message: "Invalid email or reset token" });
+            }
+        }).catch(err => res.status(422).json({ success: false, message: "Error checking reset request", error: err }));
     }
 };

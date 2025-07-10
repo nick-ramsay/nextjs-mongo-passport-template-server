@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 3001;
 
 const currentMongoUri = process.env.NODE_ENV === "production" ? process.env.mongo_uri : 'mongodb://localhost:27017/nextjs-mongo-passport-template';
 
+//Need this for Heroku deployment of Express Session
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === "production" ? 'https://www.nextjs-mongo-passport-template.com' : 'http://localhost:3000',
@@ -23,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Express Session configuration
+// Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret',
   resave: false,
@@ -37,15 +40,16 @@ app.use(session({
   }
 }));
 
-// Passport.js configuration
 app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
 
+// MongoDB connection
 mongoose.connect(currentMongoUri)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 
+// Routes
 app.use(routes);
 
 app.listen(PORT, () => {
